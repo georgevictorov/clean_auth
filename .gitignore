@@ -1,0 +1,7 @@
+.venv
+.idea
+.env
+__pycache__
+compose.override.yml
+public_key.pem
+private_key.pem
