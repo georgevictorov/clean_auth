@@ -1,4 +1,5 @@
 from uuid import uuid7
+
 import pytest
 
 from auth.domain.errors import InvalidPasswordHash, InvalidUsername
@@ -23,6 +24,12 @@ def test_create_user():
     assert user.username == 'test-user'
     assert user.password_hash == 'hash-password'
     assert user.is_active
+
+
+def test_user_is_enabled_by_default():
+    user = create_user()
+
+    assert user.disabled is False
 
 
 def test_create_user_no_username():
@@ -72,6 +79,14 @@ def test_user_default_version_is_one():
     user = create_user()
 
     assert user.version == 1
+
+
+def test_user_disabled_property_returns_true_after_disable():
+    user = create_user()
+
+    user.disable()
+
+    assert user.disabled is True
 
 
 def test_user_can_be_created_with_specific_version():
