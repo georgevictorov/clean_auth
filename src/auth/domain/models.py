@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from datetime import datetime
-from uuid import UUID
+from datetime import datetime, timedelta
+from uuid import UUID, uuid7
 
 from auth.domain.errors import (InvalidCreationTime, InvalidExpirationTime,
-                                InvalidPasswordHash, InvalidUsername, InvalidUserID)
+                                InvalidPasswordHash, InvalidUserID,
+                                InvalidUsername)
 
 
 @dataclass
@@ -31,16 +32,35 @@ class User:
     def disable(self) -> None:
         self._disabled = True
 
+    @property
+    def disabled(self):
+        return self._disabled
+
 
 @dataclass
 class Session:
     session_id: UUID
     user_id: UUID
-    token_hash: str
+    refresh_token_hash: str | None
     created_at: datetime
     expires_at: datetime
     version: int = 1
     _revoked: bool = False
+
+    @classmethod
+    def create(
+            cls,
+            user_id: UUID,
+            created_at: datetime,
+            lifetime: timedelta,
+    ) -> "Session":
+        return cls(
+            session_id=uuid7(),
+            user_id=user_id,
+            refresh_token_hash=None,
+            created_at=created_at,
+            expires_at=created_at + lifetime,
+        )
 
     def __post_init__(self) -> None:
         if not self.user_id:
@@ -66,3 +86,10 @@ class Session:
                 not self._revoked and
                 not self.is_expired(now)
         )
+
+    def attach_refresh_token(self, token_hash: str) -> None:
+        self.refresh_token_hash = token_hash
+
+    @property
+    def revoked(self):
+        return self._revoked
