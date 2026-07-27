@@ -24,3 +24,7 @@ class InvalidExpirationTime(ValidationError):
 
 class InvalidCreationTime(ValidationError):
     ...
+
+
+class InvalidCredentials(ValidationError):
+    ...
