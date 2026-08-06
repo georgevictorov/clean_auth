@@ -197,6 +197,6 @@ def test_refresh_token_is_empty_by_default():
 def test_attach_refresh_token_stores_hash():
     session = make_session()
 
-    session.attach_refresh_token("hash")
+    session.rotate_refresh_token("hash")
 
     assert session.refresh_token_hash == "hash"

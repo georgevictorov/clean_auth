@@ -1,3 +1,4 @@
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from uuid import UUID, uuid7
@@ -15,6 +16,18 @@ class User:
     version: int = 1
     _disabled: bool = False
 
+    @classmethod
+    def create(
+            cls,
+            username: str,
+            password_hash: str,
+    ) -> "User":
+        return cls(
+            user_id=uuid7(),
+            username=username,
+            password_hash=password_hash,
+        )
+
     def __post_init__(self) -> None:
         if not self.username:
             raise InvalidUsername('username is required')
@@ -31,10 +44,6 @@ class User:
 
     def disable(self) -> None:
         self._disabled = True
-
-    @property
-    def disabled(self):
-        return self._disabled
 
 
 @dataclass
@@ -87,7 +96,7 @@ class Session:
                 not self.is_expired(now)
         )
 
-    def attach_refresh_token(self, token_hash: str) -> None:
+    def rotate_refresh_token(self, token_hash: str) -> None:
         self.refresh_token_hash = token_hash
 
     @property

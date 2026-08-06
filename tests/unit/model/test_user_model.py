@@ -7,12 +7,10 @@ from auth.domain.models import User
 
 
 def create_user(
-        user_id=uuid7(),
         username='test-user',
         password='hash-password'
 ) -> User:
-    return User(
-        user_id=user_id,
+    return User.create(
         username=username,
         password_hash=password,
     )
@@ -29,7 +27,7 @@ def test_create_user():
 def test_user_is_enabled_by_default():
     user = create_user()
 
-    assert user.disabled is False
+    assert user.is_active is True
 
 
 def test_create_user_no_username():
@@ -86,7 +84,7 @@ def test_user_disabled_property_returns_true_after_disable():
 
     user.disable()
 
-    assert user.disabled is True
+    assert user.is_active is False
 
 
 def test_user_can_be_created_with_specific_version():
