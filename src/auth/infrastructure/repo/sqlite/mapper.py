@@ -24,7 +24,7 @@ class UserMapper:
             user.username,
             user.password_hash,
             user.version,
-            int(user.disabled)
+            int(user.is_active)
         )
 
 
@@ -35,7 +35,7 @@ class SessionMapper:
         return Session(
             session_id=UUID(row["session_id"]),
             user_id=UUID(row["user_id"]),
-            token_hash=row["token_hash"],
+            refresh_token_hash=row["token_hash"],
             created_at=datetime.fromisoformat(row["created_at"]),
             expires_at=datetime.fromisoformat(row["expires_at"]),
             version=row["version"],
@@ -47,7 +47,7 @@ class SessionMapper:
         return (
             str(session.session_id),
             str(session.user_id),
-            session.token_hash,
+            session.refresh_token_hash,
             session.created_at.isoformat(),
             session.expires_at.isoformat(),
             session.version,
