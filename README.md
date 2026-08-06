@@ -19,10 +19,10 @@
                     ┌────────────────────────────┐
                     │      Application Layer     │
                     │                            │
-                    │  LoginService              │
-                    │  RefreshService            │
-                    │  LogoutService             │
-                    │  UserService               │
+                    │                            │
+                    │        AuthService         │
+                    │        UserService         │
+                    │                            │
                     └──────────────┬─────────────┘
                                    │
       ┌────────────────────────────┼─────────────────────────────┐
