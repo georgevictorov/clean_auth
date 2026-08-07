@@ -11,7 +11,7 @@ class CreateSession:
     expires_at: datetime
     revoked: bool
 
+
 @dataclass(frozen=True)
 class RefreshRequest:
     refresh_token: str
-
