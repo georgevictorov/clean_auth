@@ -26,5 +26,9 @@ class InvalidCreationTime(ValidationError):
     ...
 
 
-class InvalidCredentials(ValidationError):
+class TokenDecodeError(DomainError):
+    ...
+
+
+class InvalidCredentials(DomainError):
     ...
