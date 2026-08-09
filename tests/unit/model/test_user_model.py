@@ -96,3 +96,17 @@ def test_user_can_be_created_with_specific_version():
     )
 
     assert user.version == 5
+
+
+def test_user_change_password():
+    user = create_user()
+    user.change_password('new-password')
+
+    assert user.password_hash == 'new-password'
+
+
+def test_user_change_password_empty_password_hash():
+    user = create_user()
+
+    with pytest.raises(InvalidPasswordHash):
+        user.change_password('')
