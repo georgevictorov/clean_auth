@@ -44,6 +44,11 @@ class User:
     def disable(self) -> None:
         self._disabled = True
 
+    def change_password(self, password_hash: str):
+        if not password_hash:
+            raise InvalidPasswordHash('password hash is required')
+        self.password_hash = password_hash
+
 
 @dataclass
 class Session:
@@ -83,6 +88,10 @@ class Session:
         if self.expires_at <= self.created_at:
             raise InvalidExpirationTime("expires_at must be later than created_at")
 
+    @property
+    def revoked(self):
+        return self._revoked
+
     def revoke(self) -> None:
         self._revoked = True
 
@@ -97,7 +106,3 @@ class Session:
 
     def rotate_refresh_token(self, token_hash: str) -> None:
         self.refresh_token_hash = token_hash
-
-    @property
-    def revoked(self):
-        return self._revoked
