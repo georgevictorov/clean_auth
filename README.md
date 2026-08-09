@@ -47,14 +47,14 @@
       │                            │                            │
       ▼                            ▼                            ▼
 
- SQLiteUnitOfWork          SQLiteRepositories          JwtTokenProvider
+ SQLUnitOfWork          SQLRepositories          PasetoTokenProvider
                             (User / Session)
 
-                SQLite Mapper       Identity Map Snapshot
+                SQL Mapper  Identity Map    Snapshot
 
                       Argon2PasswordHasher
 
-                    SQLite Database / Key Store
+                            SQL Database
 
 
 ┌──────────────────────────────┐
@@ -65,15 +65,17 @@ Client
   │
   │ username + password
   ▼
-LoginService
+AuthService
   │
   ├── UnitOfWork.begin()
   ├── UserRepository.get(username)
   ├── PasswordHasher.verify()
-  ├── UserSession.create()
+  ├── Session.create()
+  ├── TokenProvider.issue()
+  ├── PasswordHasher.hash(refresh_token)
+  ├── Session.rotate_refresh_token(refresh_token_hash)
   ├── SessionRepository.add()
-  ├── UnitOfWork.commit()
-  └── TokenProvider.issue()
+  └── UnitOfWork.commit()
           │
           ├── Access Token
           └── Refresh Token
@@ -87,22 +89,23 @@ Client
   │
   │ refresh token
   ▼
-RefreshService
+AuthService
   │
   ├── UnitOfWork.begin()
-  ├── TokenProvider.verify()
+  ├── TokenProvider.verify_refresh()
   ├── SessionRepository.get(session_id)
-  ├── verify refresh_token_hash
-  ├── UserSession.rotate_refresh_token()
-  ├── UnitOfWork.commit()
-  └── TokenProvider.issue()
+  ├── PasswordHasher.verify(refresh_token, refresh_token_hash)
+  ├── TokenProvider.issue()
+  ├── PasswordHasher.hash(new_refresh_token)
+  ├── Session.rotate_refresh_token(new_refresh_token_hash)
+  └── UnitOfWork.commit()
           │
           ├── New Access Token
           └── New Refresh Token
   
 Before refresh
 
-UserSession
+Session
 -------------------------
 session_id = 123
 username = john
@@ -112,7 +115,7 @@ revoked = false
 
 After refresh
 
-UserSession
+Session
 -------------------------
 session_id = 123
 username = john
@@ -126,14 +129,14 @@ revoked = false
 
 Client
   │
-  │ access / refresh token
+  │ refresh token
   ▼
-LogoutService
+AuthService
   │
   ├── UnitOfWork.begin()
-  ├── TokenProvider.verify()
+  ├── TokenProvider.verify_refresh()
   ├── SessionRepository.get(session_id)
-  ├── UserSession.revoke()
+  ├── Session.revoke()
   └── UnitOfWork.commit()
   
   
@@ -145,34 +148,19 @@ CLI / API
   │
   │ username + password
   ▼
-CreateUserService
+UserService
   │
   ├── UnitOfWork.begin()
-  ├── UserRepository.exists()
+  ├── UserRepository.user_exists()
   ├── PasswordHasher.hash()
   ├── User.create()
   ├── UserRepository.add()
   └── UnitOfWork.commit()
-  
-  
-┌──────────────────────────────┐
-│     Change Password Flow     │
-└──────────────────────────────┘
-
-CLI / API
-  │
-  │ username + new password
-  ▼
-ChangePasswordService
-  │
-  ├── UnitOfWork.begin()
-  ├── UserRepository.get(username)
-  ├── PasswordHasher.hash()
-  ├── User.change_password()
-  ├── SessionRepository.revoke_all(username)
-  └── UnitOfWork.commit()
-  
-  
+          │
+          ├── User ID
+          └── Username
+          
+          
 ┌──────────────────────────────┐
 │       Disable User Flow      │
 └──────────────────────────────┘
@@ -181,32 +169,51 @@ CLI / API
   │
   │ username
   ▼
-DisableUserService
+UserService
   │
   ├── UnitOfWork.begin()
   ├── UserRepository.get(username)
   ├── User.disable()
-  ├── SessionRepository.revoke_all(username)
-  └── UnitOfWork.commit()
+  ├── SessionRepository.revoke_all(user.user_id)
+  └── UnitOfWork.commit()          
+          
+          
+┌──────────────────────────────┐
+│     Change Password Flow     │
+└──────────────────────────────┘
 
+CLI / API
+  │
+  │ username + old password + new password
+  ▼
+UserService
+  │
+  ├── UnitOfWork.begin()
+  ├── UserRepository.get(username)
+  ├── PasswordHasher.verify(old password)
+  ├── PasswordHasher.hash(new password)
+  ├── User.change_password()
+  └── UnitOfWork.commit()
+  
 
                     Domain Models
                     
 User
 ----
+user_id
 username
 password_hash
-disabled
 version
+disabled
 
 
-UserSession
------------
+Session
+-------
 session_id
-username
+user_id
 refresh_token_hash
 created_at
 expires_at
-revoked
 version
+revoked
 ```
