@@ -32,3 +32,11 @@ class TokenDecodeError(DomainError):
 
 class InvalidCredentials(DomainError):
     ...
+
+
+class UserAlreadyExists(DomainError):
+    ...
+
+
+class UserNotFound(DomainError):
+    ...
