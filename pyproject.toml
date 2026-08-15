@@ -12,7 +12,8 @@ packeges = [
 
 requires-python = ">=3.14"
 dependencies = [
-    "cryptography (>=49.0.0,<50.0.0)"
+    "cryptography (>=49.0.0,<50.0.0)",
+    "psycopg[binary,pool] (>=3.3.4,<4.0.0)"
 ]
 
 [dependency-groups]
