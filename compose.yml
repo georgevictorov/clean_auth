@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.dbmate
+
+    image: auth-migrations:0.1.0
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+
+    command: up
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    restart: unless-stopped
+
+    image: auth-image:0.1.0
+
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+
+volumes:
+  postgres_data:
