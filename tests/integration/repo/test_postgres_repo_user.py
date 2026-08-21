@@ -21,6 +21,27 @@ def test_add_and_get_user(db_connection, clean_db):
     assert result == user
 
 
+def test_get_loads_user_from_database(db_connection, clean_db):
+    repo = PostgresUserRepo(db_connection)
+
+    user = User.create(
+        "username",
+        "password-super-hash"
+    )
+
+    repo.add(user)
+    repo.flush()
+    db_connection.commit()
+
+    repo = PostgresUserRepo(db_connection)
+
+    result = repo.get(user.user_id)
+
+    assert result == user
+    assert result is not user
+
+
+
 def test_get_by_username(db_connection, clean_db):
     repo = PostgresUserRepo(db_connection)
 
