@@ -20,7 +20,7 @@ class UserMapper:
             user.username,
             user.password_hash,
             user.version,
-            user.is_active,
+            user.is_disabled,
         )
 
 
