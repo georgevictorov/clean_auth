@@ -45,6 +45,7 @@ def test_disable_user():
     user.disable()
 
     assert not user.is_active
+    assert user.is_disabled is True
 
 
 def test_disable_disabled_user():

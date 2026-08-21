@@ -1,0 +1,3 @@
+FROM amacneil/dbmate:2.33
+
+COPY /db/migrations /db/migrations

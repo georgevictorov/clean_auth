@@ -38,6 +38,10 @@ class User:
     def is_active(self) -> bool:
         return not self._disabled
 
+    @property
+    def is_disabled(self) -> bool:
+        return self._disabled
+
     def enable(self) -> None:
         self._disabled = False
 
