@@ -11,8 +11,9 @@ class AbstractUnitOfWork(ABC):
     def __enter__(self):
         return self
 
-    def __exit__(self, *args):
-        self.rollback()
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type is not None:
+            self.rollback()
 
     @abstractmethod
     def commit(self):
