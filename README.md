@@ -9,7 +9,7 @@
         │ /login              │     │ create-user         │
         │ /refresh            │     │ disable-user        │
         │ /logout             │     │ change-password     │
-        │                     │     │                     │
+        │ /.well-known/paserk.json  │                     │
         └──────────┬──────────┘     └──────────┬──────────┘
                    │                           │
                    └─────────────┬─────────────┘
@@ -22,32 +22,32 @@
                     │                            │
                     │        AuthService         │
                     │        UserService         │
-                    │                            │
+                    │        KeyService          │
                     └──────────────┬─────────────┘
                                    │
-      ┌────────────────────────────┼─────────────────────────────┐
-      │                            │                             │
-      ▼                            ▼                             ▼
- UnitOfWork                 TokenProvider                PasswordHasher
-    Port                         Port                          Port
-      │                            │                             │
-      └──────────────┬─────────────┴─────────────┬───────────────┘
+      ┌────────────────────────────┼─────────────────────────────┐─────────────────┐
+      │                            │                             │                 │      
+      ▼                            ▼                             ▼                 ▼
+ UnitOfWork                 TokenProvider                PasswordHasher      KeyProvider
+    Port                         Port                          Port              Port      
+      │                            │                             │                 │
+      └──────────────┬─────────────┴─────────────┬───────────────┘─────────────────┘
                      │                           │
                      ▼                           ▼
 
 ═══════════════════════════ DOMAIN ═══════════════════════════
 
-                     User              UserSession
+                     User                Session
 
 ═══════════════════════════════════════════════════════════════
 
                      ▲                           ▲
                      │                           │
-      ┌──────────────┴─────────────┬─────────────┴──────────────┐
-      │                            │                            │
-      ▼                            ▼                            ▼
+      ┌──────────────┴─────────────┬─────────────┴──────────────┐────────────────┐
+      │                            │                            │                │
+      ▼                            ▼                            ▼                ▼
 
- SQLUnitOfWork          SQLRepositories          PasetoTokenProvider
+ SQLUnitOfWork          SQLRepositories          PasetoTokenProvider       PasetoKeyProvider
                             (User / Session)
 
                 SQL Mapper  Identity Map    Snapshot
@@ -139,6 +139,29 @@ AuthService
   ├── Session.revoke()
   └── UnitOfWork.commit()
   
+  
+┌──────────────────────────────┐
+│     Get Public Keys Flow     │
+└──────────────────────────────┘
+
+Client
+  │
+  │ GET /.well-known/paserk.json
+  ▼
+Flask API
+  │
+  ├── KeyService.get_public_keys()
+  ├── KeyProvider.get_public_keys()
+  └── 200 OK
+      {
+        "keys": [
+          {
+            "kid": "auth-key-01...",
+            "paserk": "k4.public.A2x4..."
+          }
+        ]
+      }
+      
   
 ┌──────────────────────────────┐
 │       Create User Flow       │

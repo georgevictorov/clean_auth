@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PRIVATE_KEY="keys/private.pem"
-PUBLIC_KEY="keys/public.pem"
+KEYS_DIR="keys"
+PRIVATE_KEY="$KEYS_DIR/private.pem"
+PUBLIC_KEY="$KEYS_DIR/public.pem"
+
+mkdir -p "$KEYS_DIR"
 
 if [[ -f "$PRIVATE_KEY" && -f "$PUBLIC_KEY" ]]; then
     echo "Keys already exist."
