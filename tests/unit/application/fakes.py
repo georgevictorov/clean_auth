@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from auth.application_layer.dto.token import TokenPairResponse, TokenPayload
+from auth.application_layer.dto.key import PublicKeyResponse
 from auth.application_layer.ports.unit_of_work import AbstractUnitOfWork
 from auth.domain.errors import TokenDecodeError
 from auth.domain.models import Session, User
@@ -99,3 +100,13 @@ class FakeClock:
     @staticmethod
     def now():
         return FakeClock.NOW
+
+
+class FakeKeyProvider:
+    def __init__(self, response: PublicKeyResponse) -> None:
+        self.response = response
+        self.counter = 0
+
+    def get_public_keys(self) -> PublicKeyResponse:
+        self.counter += 1
+        return self.response
