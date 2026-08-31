@@ -1,8 +1,8 @@
 from psycopg_pool import ConnectionPool
 
 from auth.application_layer.ports.unit_of_work import AbstractUnitOfWork
-from auth.infrastructure.repo.postgres.postgres_repo import (
-    SessionRepository, UserRepository)
+from auth.infrastructure.repo.postgres.postgres_repo import (SessionRepository,
+                                                             UserRepository)
 
 
 class PostgresUnitOfWork(AbstractUnitOfWork):

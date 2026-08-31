@@ -5,8 +5,8 @@ import pytest
 
 from auth.domain.errors import ConcurrencyError, InfrastructureError
 from auth.domain.models import Session, User
-from auth.infrastructure.repo.postgres.postgres_repo import (
-    SessionRepository, UserRepository)
+from auth.infrastructure.repo.postgres.postgres_repo import (SessionRepository,
+                                                             UserRepository)
 
 NOW = datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
 
