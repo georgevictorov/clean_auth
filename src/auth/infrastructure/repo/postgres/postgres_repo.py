@@ -9,7 +9,7 @@ from auth.domain.models import Session, User
 from auth.infrastructure.repo.postgres.mapper import SessionMapper, UserMapper
 
 
-class PostgresUserRepo:
+class UserRepository:
     def __init__(self, conn: psycopg.Connection):
         self._conn = conn
 
@@ -158,7 +158,7 @@ class PostgresUserRepo:
         user.version += 1
 
 
-class PostgresSessionRepo:
+class SessionRepository:
     def __init__(self, conn: psycopg.Connection):
         self._conn = conn
 

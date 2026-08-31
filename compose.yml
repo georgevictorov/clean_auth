@@ -32,6 +32,16 @@ services:
 
     command: up
 
+  keys:
+    build:
+      context: .
+      dockerfile: Dockerfile.keys
+
+    image: auth-keys:0.1.0
+
+    volumes:
+      - auth_keys:/keys
+
   api:
     build:
       context: .
@@ -42,6 +52,9 @@ services:
     image: auth-image:0.1.0
 
     depends_on:
+      keys:
+        condition: service_completed_successfully
+
       migrate:
         condition: service_completed_successfully
 
@@ -51,6 +64,8 @@ services:
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
+      - auth_keys:/app/keys
 
 volumes:
   postgres_data:
+  auth_keys:
