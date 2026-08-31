@@ -1,6 +1,6 @@
+from auth.application_layer.dto.key import PublicKey, PublicKeyResponse
 from auth.application_layer.use_cases.key import KeyService
 from tests.unit.application.fakes import FakeKeyProvider
-from auth.application_layer.dto.key import PublicKey, PublicKeyResponse
 
 
 def test_get_public_keys_returns_public_keys():
