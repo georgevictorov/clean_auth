@@ -1,5 +1,6 @@
 from typing import Protocol
-from auth.application_layer.dto.key import PublicKeyResponse, PublicKey
+
+from auth.application_layer.dto.key import PublicKey, PublicKeyResponse
 
 
 class KeyProvider(Protocol):

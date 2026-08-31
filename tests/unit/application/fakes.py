@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
-from auth.application_layer.dto.token import TokenPairResponse, TokenPayload
 from auth.application_layer.dto.key import PublicKeyResponse
+from auth.application_layer.dto.token import TokenPairResponse, TokenPayload
 from auth.application_layer.ports.unit_of_work import AbstractUnitOfWork
 from auth.domain.errors import TokenDecodeError
 from auth.domain.models import Session, User
