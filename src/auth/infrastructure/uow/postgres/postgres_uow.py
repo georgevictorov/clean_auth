@@ -2,7 +2,7 @@ from psycopg_pool import ConnectionPool
 
 from auth.application_layer.ports.unit_of_work import AbstractUnitOfWork
 from auth.infrastructure.repo.postgres.postgres_repo import (
-    PostgresSessionRepo, PostgresUserRepo)
+    SessionRepository, UserRepository)
 
 
 class PostgresUnitOfWork(AbstractUnitOfWork):
@@ -12,8 +12,8 @@ class PostgresUnitOfWork(AbstractUnitOfWork):
     def __enter__(self):
         self._conn = self._pool.getconn()
 
-        self.users = PostgresUserRepo(self._conn)
-        self.sessions = PostgresSessionRepo(self._conn)
+        self.users = UserRepository(self._conn)
+        self.sessions = SessionRepository(self._conn)
 
         self._repositories = (
             self.users,
