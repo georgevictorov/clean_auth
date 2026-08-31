@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-KEYS_DIR="keys"
+KEYS_DIR="${1:-secrets}"
 PRIVATE_KEY="$KEYS_DIR/private.pem"
 PUBLIC_KEY="$KEYS_DIR/public.pem"
 

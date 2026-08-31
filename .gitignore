@@ -6,5 +6,5 @@ __pycache__
 compose.override.yml
 
 
-keys
+secrets
 *.pem

@@ -32,16 +32,6 @@ services:
 
     command: up
 
-  keys:
-    build:
-      context: .
-      dockerfile: Dockerfile.keys
-
-    image: auth-keys:0.1.0
-
-    volumes:
-      - auth_keys:/keys
-
   api:
     build:
       context: .
@@ -52,20 +42,25 @@ services:
     image: auth-image:0.1.0
 
     depends_on:
-      keys:
-        condition: service_completed_successfully
-
       migrate:
         condition: service_completed_successfully
 
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
 
+    secrets:
+      - private_key
+      - public_key
+
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
-      - auth_keys:/app/keys
 
 volumes:
   postgres_data:
-  auth_keys:
+
+secrets:
+  private_key:
+    file: ./secrets/private.pem
+  public_key:
+    file: ./secrets/public.pem
