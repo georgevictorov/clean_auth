@@ -7,17 +7,17 @@ permissions:
   contents: read
   packages: write
 
+env:
+  POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+  POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+  POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_PORT: ${{ secrets.DB_PORT }}
+  REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
-
-    env:
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
 
     steps:
       - uses: actions/checkout@v6
@@ -32,14 +32,6 @@ jobs:
   publish:
     needs: test
     runs-on: ubuntu-latest
-
-    env:
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
 
     steps:
       - uses: actions/checkout@v6
