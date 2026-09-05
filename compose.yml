@@ -21,7 +21,7 @@ services:
       context: .
       dockerfile: Dockerfile.dbmate
 
-    image: auth-migrations:0.1.0
+    image: ${REGISTRY_HOST}/auth-migrations:0.1.0
 
     depends_on:
       postgres:
@@ -39,7 +39,7 @@ services:
 
     restart: unless-stopped
 
-    image: auth-image:0.1.0
+    image: ${REGISTRY_HOST}/auth-image:0.1.0
 
     depends_on:
       migrate:
