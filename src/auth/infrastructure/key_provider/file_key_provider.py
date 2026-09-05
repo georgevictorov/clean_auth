@@ -4,10 +4,9 @@ from pathlib import Path
 import pyseto
 
 from auth.application_layer.dto.key import PublicKey, PublicKeyResponse
-from auth.application_layer.ports.key_provider import KeyProvider
 
 
-class FileKeyProvider(KeyProvider):
+class FileKeyProvider:
     def __init__(self, public_key_path: str):
         self._public_key_path = Path(public_key_path)
 
