@@ -1,8 +1,0 @@
-from typing import Protocol
-
-from auth.application_layer.dto.key import PublicKeyResponse
-
-
-class KeyProvider(Protocol):
-    def get_public_keys(self) -> PublicKeyResponse:
-        ...
