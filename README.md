@@ -1,60 +1,84 @@
 ``` 
-                        Authentication Service
+Authentication Service
+======================
+
+Authentication service responsible for user authentication,
+session management, token issuance and publication of the
+public Ed25519 key in PASERK format.
 
 
-        ┌─────────────────────┐     ┌─────────────────────┐
-        │                     │     │                     │
-        │      Flask API      │     │         CLI         │
-        │                     │     │                     │
-        │ /login              │     │ create-user         │
-        │ /refresh            │     │ disable-user        │
-        │ /logout             │     │ change-password     │
-        │ /.well-known/paserk.json  │                     │
-        └──────────┬──────────┘     └──────────┬──────────┘
-                   │                           │
-                   └─────────────┬─────────────┘
-                                 │
-                                 ▼
+Architecture
+------------
 
-                    ┌────────────────────────────┐
-                    │      Application Layer     │
-                    │                            │
-                    │                            │
-                    │        AuthService         │
-                    │        UserService         │
-                    │        KeyService          │
-                    └──────────────┬─────────────┘
-                                   │
-      ┌────────────────────────────┼─────────────────────────────┐─────────────────┐
-      │                            │                             │                 │      
-      ▼                            ▼                             ▼                 ▼
- UnitOfWork                 TokenProvider                PasswordHasher      KeyProvider
-    Port                         Port                          Port              Port      
-      │                            │                             │                 │
-      └──────────────┬─────────────┴─────────────┬───────────────┘─────────────────┘
-                     │                           │
-                     ▼                           ▼
+                    ┌─────────────────────┐     ┌─────────────────────┐
+                    │      Flask API      │     │         CLI         │
+                    │                     │     │                     │
+                    │ /login              │     │ create-user         │
+                    │ /refresh            │     │ disable-user        │
+                    │ /logout             │     │ change-password     │
+                    │ /.well-known/       │     │                     │
+                    │ paserk.json         │     │                     │
+                    └──────────┬──────────┘     └──────────┬──────────┘
+                               │                           │
+                               └─────────────┬─────────────┘
+                                             │
+                                             ▼
 
-═══════════════════════════ DOMAIN ═══════════════════════════
+                              ┌────────────────────────────┐
+                              │      Application Layer     │
+                              │                            │
+                              │        AuthService         │
+                              │        UserService         │
+                              │        KeyService          │
+                              └──────────────┬─────────────┘
+                                             │
+                    ┌────────────────────────┼────────────────────────┐
+                    │                        │                        │
+                    ▼                        ▼                        ▼
+              UnitOfWork              TokenProvider             PasswordHasher
+                 Port                      Port                      Port
+                    │                        │                        │
+                    │                        │                        │
+                    │                        ▼                        │
+                    │               PasetoTokenProvider               │
+                    │                        │                        │
+                    │                        │                        │
+                    │                        ▼                        │
+                    │                  KeyProvider                    │
+                    │                        │                        │
+                    │                        │                        │
+                    │                        ▼                        │
+                    │                Ed25519 Key Pair                 │
+                    │                                                 │
+                    │                                                 │
+                    └──────────────────────────┬──────────────────────┘
+                                               │
+                                               ▼
 
-                     User                Session
+════════════════════════════ DOMAIN ════════════════════════════
 
-═══════════════════════════════════════════════════════════════
+                         User              Session
 
-                     ▲                           ▲
-                     │                           │
-      ┌──────────────┴─────────────┬─────────────┴──────────────┐────────────────┐
-      │                            │                            │                │
-      ▼                            ▼                            ▼                ▼
 
- SQLUnitOfWork          SQLRepositories          PasetoTokenProvider       PasetoKeyProvider
-                            (User / Session)
+════════════════════════════════════════════════════════════════
 
-                SQL Mapper  Identity Map    Snapshot
+             ▲                    ▲                    ▲
+             │                    │                    │
+      ┌──────┴──────┐      ┌──────┴──────┐      ┌──────┴────────┐
+      │             │      │             │      │               │
+      ▼             ▼      ▼             ▼      ▼               ▼
+ SQLUnitOfWork  SQLRepositories     PasetoTokenProvider   FileKeysPairProvider
+                User / Session                              DockerSecrets...
+                                                            Vault...
+      │
+      │
+      ├── SQL Mapper
+      ├── Identity Map
+      └── Snapshot
 
-                      Argon2PasswordHasher
+                         Argon2PasswordHasher
 
-                            SQL Database
+                              PostgreSQL
 
 
 ┌──────────────────────────────┐
