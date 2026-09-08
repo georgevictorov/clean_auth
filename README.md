@@ -1,226 +1,167 @@
-``` 
-                        Authentication Service
+# Authentication Service
 
+Authentication service for user authentication, session management, token issuance, and public key discovery.
 
-        ┌─────────────────────┐     ┌─────────────────────┐
-        │                     │     │                     │
-        │      Flask API      │     │         CLI         │
-        │                     │     │                     │
-        │ /login              │     │ create-user         │
-        │ /refresh            │     │ disable-user        │
-        │ /logout             │     │ change-password     │
-        │ /.well-known/paserk.json  │                     │
-        └──────────┬──────────┘     └──────────┬──────────┘
-                   │                           │
-                   └─────────────┬─────────────┘
-                                 │
-                                 ▼
+## Architecture
 
-                    ┌────────────────────────────┐
-                    │      Application Layer     │
-                    │                            │
-                    │                            │
-                    │        AuthService         │
-                    │        UserService         │
-                    │        KeyService          │
-                    └──────────────┬─────────────┘
-                                   │
-      ┌────────────────────────────┼─────────────────────────────┐─────────────────┐
-      │                            │                             │                 │      
-      ▼                            ▼                             ▼                 ▼
- UnitOfWork                 TokenProvider                PasswordHasher      KeyProvider
-    Port                         Port                          Port              Port      
-      │                            │                             │                 │
-      └──────────────┬─────────────┴─────────────┬───────────────┘─────────────────┘
-                     │                           │
-                     ▼                           ▼
-
-═══════════════════════════ DOMAIN ═══════════════════════════
-
-                     User                Session
-
-═══════════════════════════════════════════════════════════════
-
-                     ▲                           ▲
-                     │                           │
-      ┌──────────────┴─────────────┬─────────────┴──────────────┐────────────────┐
-      │                            │                            │                │
-      ▼                            ▼                            ▼                ▼
-
- SQLUnitOfWork          SQLRepositories          PasetoTokenProvider       PasetoKeyProvider
-                            (User / Session)
-
-                SQL Mapper  Identity Map    Snapshot
-
-                      Argon2PasswordHasher
-
-                            SQL Database
-
-
-┌──────────────────────────────┐
-│          Login Flow          │
-└──────────────────────────────┘
-
+```text
 Client
   │
-  │ username + password
-  ▼
-AuthService
+  ├── Flask API
+  └── CLI
+        │
+        ▼
+Application Layer
   │
-  ├── UnitOfWork.begin()
-  ├── UserRepository.get(username)
-  ├── PasswordHasher.verify()
-  ├── Session.create()
-  ├── TokenProvider.issue()
-  ├── PasswordHasher.hash(refresh_token)
-  ├── Session.rotate_refresh_token(refresh_token_hash)
-  ├── SessionRepository.add()
-  └── UnitOfWork.commit()
-          │
-          ├── Access Token
-          └── Refresh Token
-          
-          
-┌──────────────────────────────┐
-│         Refresh Flow         │
-└──────────────────────────────┘
+  ├── AuthService
+  ├── UserService
+  └── KeyService
+        │
+        ├── UnitOfWork
+        ├── TokenProvider
+        ├── PasswordHasher
+        └── PaserkProvider
+                │
+                ▼
+           KeyProvider
+                │
+                ▼
+         Ed25519 key pair
+```
 
+```text
+Infrastructure
+  │
+  ├── SQLUnitOfWork
+  ├── SQLRepositories
+  ├── PasetoTokenProvider
+  ├── PaserkProvider
+  ├── FileKeysPairProvider
+  └── Argon2PasswordHasher
+        │
+        ▼
+    PostgreSQL
+```
+
+## Main Components
+
+| Component        | Responsibility                               |
+|------------------|----------------------------------------------|
+| `AuthService`    | Authentication and session lifecycle         |
+| `UserService`    | User creation and management                 |
+| `KeyService`     | Public key discovery                         |
+| `UnitOfWork`     | Transaction management                       |
+| `TokenProvider`  | Issue and verify tokens                      |
+| `PasswordHasher` | Hash and verify passwords                    |
+| `KeyProvider`    | Provide Ed25519 keys                         |
+| `PaserkProvider` | Convert public keys to PASERK representation |
+
+## Authentication
+
+```text
 Client
-  │
-  │ refresh token
-  ▼
-AuthService
-  │
-  ├── UnitOfWork.begin()
-  ├── TokenProvider.verify_refresh()
-  ├── SessionRepository.get(session_id)
-  ├── PasswordHasher.verify(refresh_token, refresh_token_hash)
-  ├── TokenProvider.issue()
-  ├── PasswordHasher.hash(new_refresh_token)
-  ├── Session.rotate_refresh_token(new_refresh_token_hash)
-  └── UnitOfWork.commit()
-          │
-          ├── New Access Token
-          └── New Refresh Token
-  
-Before refresh
+  → Flask API
+  → AuthService
+  → Load user
+  → Verify password
+  → Create session
+  → Issue access + refresh tokens
+  → Store refresh token hash
+  → Commit
+```
 
-Session
--------------------------
-session_id = 123
-username = john
-refresh_hash = H1
-revoked = false
+## Refresh
 
-
-After refresh
-
-Session
--------------------------
-session_id = 123
-username = john
-refresh_hash = H2
-revoked = false
-
-
-┌──────────────────────────────┐
-│          Logout Flow         │
-└──────────────────────────────┘
-
+```text
 Client
-  │
-  │ refresh token
-  ▼
-AuthService
-  │
-  ├── UnitOfWork.begin()
-  ├── TokenProvider.verify_refresh()
-  ├── SessionRepository.get(session_id)
-  ├── Session.revoke()
-  └── UnitOfWork.commit()
-  
-  
-┌──────────────────────────────┐
-│     Get Public Keys Flow     │
-└──────────────────────────────┘
+  → Flask API
+  → AuthService
+  → Verify refresh token
+  → Load session
+  → Verify refresh token hash
+  → Rotate refresh token
+  → Issue new tokens
+  → Commit
+```
 
+```text
+refresh_hash: H1 → H2
+```
+
+## Logout
+
+```text
 Client
-  │
-  │ GET /.well-known/paserk.json
-  ▼
-Flask API
-  │
-  ├── KeyService.get_public_keys()
-  ├── KeyProvider.get_public_keys()
-  └── 200 OK
-      {
-        "keys": [
-          {
-            "kid": "auth-key-01...",
-            "paserk": "k4.public.A2x4..."
-          }
-        ]
-      }
-      
-  
-┌──────────────────────────────┐
-│       Create User Flow       │
-└──────────────────────────────┘
+  → Flask API
+  → AuthService
+  → Load session
+  → Revoke session
+  → Commit
+```
 
+## Public Key Discovery
+
+```text
+External Service
+  → GET /.well-known/paserk.json
+  → KeyService
+  → PaserkProvider
+  → KeyProvider
+  → Public Ed25519 key
+  → PASERK
+```
+
+```json
+{
+  "keys": [
+    {
+      "kid": "auth-key-01...",
+      "paserk": "k4.public.A2x4..."
+    }
+  ]
+}
+```
+
+## User Management
+
+### Create User
+
+```text
 CLI / API
-  │
-  │ username + password
-  ▼
-UserService
-  │
-  ├── UnitOfWork.begin()
-  ├── UserRepository.user_exists()
-  ├── PasswordHasher.hash()
-  ├── User.create()
-  ├── UserRepository.add()
-  └── UnitOfWork.commit()
-          │
-          ├── User ID
-          └── Username
-          
-          
-┌──────────────────────────────┐
-│       Disable User Flow      │
-└──────────────────────────────┘
+  → UserService
+  → Check user
+  → Hash password
+  → Create user
+  → Persist
+  → Commit
+```
 
+### Disable User
+
+```text
 CLI / API
-  │
-  │ username
-  ▼
-UserService
-  │
-  ├── UnitOfWork.begin()
-  ├── UserRepository.get(username)
-  ├── User.disable()
-  ├── SessionRepository.revoke_all(user.user_id)
-  └── UnitOfWork.commit()          
-          
-          
-┌──────────────────────────────┐
-│     Change Password Flow     │
-└──────────────────────────────┘
+  → UserService
+  → Load user
+  → Disable user
+  → Revoke sessions
+  → Commit
+```
 
+### Change Password
+
+```text
 CLI / API
-  │
-  │ username + old password + new password
-  ▼
-UserService
-  │
-  ├── UnitOfWork.begin()
-  ├── UserRepository.get(username)
-  ├── PasswordHasher.verify(old password)
-  ├── PasswordHasher.hash(new password)
-  ├── User.change_password()
-  └── UnitOfWork.commit()
-  
+  → UserService
+  → Load user
+  → Verify current password
+  → Hash new password
+  → Update user
+  → Commit
+```
 
-                    Domain Models
-                    
+## Domain Models
+
+```text
 User
 ----
 user_id
