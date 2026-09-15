@@ -12,6 +12,7 @@ from auth.infrastructure.token_provider.paseto_token_provider import \
     PasetoTokenProvider
 from auth.infrastructure.uow.postgres.postgres_uow import PostgresUnitOfWork
 
+
 # composition root
 
 def create_pool() -> ConnectionPool:

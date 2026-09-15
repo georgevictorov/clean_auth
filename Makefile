@@ -13,3 +13,6 @@ down:
 
 test:
 	docker compose run --rm --no-deps api pytest tests
+
+e2e-tests: up
+	docker compose run --rm --no-deps api pytest tests/e2e
