@@ -49,18 +49,19 @@ class InvalidCredentials(DomainError):
 
 # User
 
-class UserAlreadyExists(DomainError):
-    ...
-
 
 class UserNotFound(DomainError):
     ...
 
 
-# Concurrency
+# Conflict
 
 class ConflictError(DomainError):
     """Domain conflict."""
+    ...
+
+
+class UserAlreadyExists(ConflictError):
     ...
 
 
