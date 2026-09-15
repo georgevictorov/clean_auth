@@ -56,7 +56,7 @@ class UserRepository:
         if username in self._username_map:
             return self._username_map[username]
         try:
-            with self._conn.cursor() as cursor:
+            with self._conn.cursor(row_factory=dict_row) as cursor:
                 cursor.execute(
                     """
                     select
