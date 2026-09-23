@@ -37,7 +37,7 @@ def make_session(**kwargs) -> Session:
     return Session.create(**defaults)
 
 
-def test_add_and_get__session(db_connection, clean_db):
+def test_add_and_get__session(db_connection):
     user = create_user(db_connection)
     session = make_session(user_id=user.user_id)
     repo = SessionRepository(db_connection)
@@ -50,7 +50,7 @@ def test_add_and_get__session(db_connection, clean_db):
     assert result == session
 
 
-def test_get_loads_session_from_database(db_connection, clean_db):
+def test_get_loads_session_from_database(db_connection):
     user = create_user(db_connection)
     session = make_session(user_id=user.user_id)
 
@@ -67,7 +67,7 @@ def test_get_loads_session_from_database(db_connection, clean_db):
     assert result is not session
 
 
-def test_list_by_user_id(db_connection, clean_db):
+def test_list_by_user_id(db_connection):
     user1 = create_user(db_connection)
     user2 = create_user(db_connection)
 
@@ -86,7 +86,7 @@ def test_list_by_user_id(db_connection, clean_db):
     assert sessions[0] is session1
 
 
-def test_list_by_user_id_returns_empty_list_for_user_without_sessions(db_connection, clean_db):
+def test_list_by_user_id_returns_empty_list_for_user_without_sessions(db_connection, ):
     repo = SessionRepository(db_connection)
 
     sessions = repo.list_by_user_id(uuid7())
@@ -94,14 +94,14 @@ def test_list_by_user_id_returns_empty_list_for_user_without_sessions(db_connect
     assert sessions == []
 
 
-def test_get_raises_error_if_conn_closed(db_connection, clean_db):
+def test_get_raises_error_if_conn_closed(db_connection):
     repo = SessionRepository(db_connection)
     db_connection.close()
     with pytest.raises(InfrastructureError):
         repo.get(uuid7())
 
 
-def test_flush_raises_error_if_conn_closed(db_connection, clean_db):
+def test_flush_raises_error_if_conn_closed(db_connection):
     repo = SessionRepository(db_connection)
     session = make_session()
 
@@ -113,7 +113,7 @@ def test_flush_raises_error_if_conn_closed(db_connection, clean_db):
         repo.flush()
 
 
-def test_update_session(db_connection, clean_db):
+def test_update_session(db_connection):
     user = create_user(db_connection)
     repo = SessionRepository(db_connection)
     session = make_session(user_id=user.user_id)
@@ -135,7 +135,7 @@ def test_update_session(db_connection, clean_db):
     assert result.revoked is True  # noqa
 
 
-def test_update_raises_concurrency_error(db_connection, clean_db):
+def test_update_raises_concurrency_error(db_connection):
     user = create_user(db_connection)
     repo = SessionRepository(db_connection)
     session = make_session(user_id=user.user_id)
