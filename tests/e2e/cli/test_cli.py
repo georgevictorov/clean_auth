@@ -54,7 +54,7 @@ def finish_cli(child: pexpect.spawn) -> tuple[int | None, Any | None]:
     return child.exitstatus, child.before
 
 
-def test_create_user(clean_db):
+def test_create_user():
     child = run_cli("create-user", "george")
 
     enter_password_pair(child, "password123")
@@ -65,7 +65,7 @@ def test_create_user(clean_db):
     assert "user: george created with id:" in output
 
 
-def test_create_user_already_exists(clean_db):
+def test_create_user_already_exists():
     child = run_cli("create-user", "george")
     enter_password_pair(child, "password123")
 
@@ -82,7 +82,7 @@ def test_create_user_already_exists(clean_db):
     assert "user already exists" in output
 
 
-def test_create_user_passwords_do_not_match(clean_db):
+def test_create_user_passwords_do_not_match():
     child = run_cli("create-user", "george")
 
     enter_password_pair(
@@ -97,7 +97,7 @@ def test_create_user_passwords_do_not_match(clean_db):
     assert "passwords do not match" in output
 
 
-def test_disable_user(clean_db):
+def test_disable_user():
     child = run_cli("create-user", "george")
     enter_password_pair(child, "password123")
 
@@ -113,7 +113,7 @@ def test_disable_user(clean_db):
     assert "user: george disabled" in output
 
 
-def test_disable_user_not_found(clean_db):
+def test_disable_user_not_found():
     child = run_cli("disable-user", "george")
 
     exitstatus, output = finish_cli(child)
@@ -122,7 +122,7 @@ def test_disable_user_not_found(clean_db):
     assert "user does not exist" in output
 
 
-def test_change_password(clean_db):
+def test_change_password():
     child = run_cli("create-user", "george")
     enter_password_pair(child, "old-password")
 
@@ -144,7 +144,7 @@ def test_change_password(clean_db):
     assert "user: george changed password" in output
 
 
-def test_change_password_user_not_found(clean_db):
+def test_change_password_user_not_found():
     child = run_cli("change-password", "george")
 
     enter_change_password(
@@ -159,7 +159,7 @@ def test_change_password_user_not_found(clean_db):
     assert "user does not exist" in output
 
 
-def test_change_password_invalid_old_password(clean_db):
+def test_change_password_invalid_old_password():
     child = run_cli("create-user", "george")
     enter_password_pair(child, "old-password")
 
@@ -181,7 +181,7 @@ def test_change_password_invalid_old_password(clean_db):
     assert "invalid credentials" in output
 
 
-def test_change_password_passwords_do_not_match(clean_db):
+def test_change_password_passwords_do_not_match():
     child = run_cli("create-user", "george")
     enter_password_pair(child, "old-password")
 

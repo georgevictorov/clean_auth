@@ -20,7 +20,7 @@ def db_connection(db_pool):
         yield conn
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def clean_db(db_connection):
     with db_connection.cursor() as cur:
         cur.execute("TRUNCATE users, sessions CASCADE")
