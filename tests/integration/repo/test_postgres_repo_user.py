@@ -5,7 +5,7 @@ from auth.domain.models import User
 from auth.infrastructure.repo.postgres.postgres_repo import UserRepository
 
 
-def test_add_and_get_user(db_connection, clean_db):
+def test_add_and_get_user(db_connection):
     repo = UserRepository(db_connection)
 
     user = User.create(
@@ -21,7 +21,7 @@ def test_add_and_get_user(db_connection, clean_db):
     assert result == user
 
 
-def test_get_loads_user_from_database(db_connection, clean_db):
+def test_get_loads_user_from_database(db_connection):
     repo = UserRepository(db_connection)
 
     user = User.create(
@@ -42,7 +42,7 @@ def test_get_loads_user_from_database(db_connection, clean_db):
 
 
 
-def test_get_by_username(db_connection, clean_db):
+def test_get_by_username(db_connection):
     repo = UserRepository(db_connection)
 
     user = User.create(
@@ -58,14 +58,14 @@ def test_get_by_username(db_connection, clean_db):
     assert result == user
 
 
-def test_get_raises_error_if_conn_closed(db_connection, clean_db):
+def test_get_raises_error_if_conn_closed(db_connection):
     repo = UserRepository(db_connection)
     db_connection.close()
     with pytest.raises(InfrastructureError):
         repo.get_by_username("username")
 
 
-def test_flush_raises_error_if_conn_closed(db_connection, clean_db):
+def test_flush_raises_error_if_conn_closed(db_connection):
     repo = UserRepository(db_connection)
 
     user = User.create(
@@ -81,7 +81,7 @@ def test_flush_raises_error_if_conn_closed(db_connection, clean_db):
         repo.flush()
 
 
-def test_flush_raises_concurrency_error_if_version_changed(db_connection, clean_db):
+def test_flush_raises_concurrency_error_if_version_changed(db_connection):
     repo = UserRepository(db_connection)
 
     user = User.create(

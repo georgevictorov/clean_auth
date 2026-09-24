@@ -12,7 +12,6 @@ from auth.infrastructure.token_provider.paseto_token_provider import \
     PasetoTokenProvider
 from auth.infrastructure.uow.postgres.postgres_uow import PostgresUnitOfWork
 
-
 # composition root
 
 def create_pool() -> ConnectionPool:
@@ -55,6 +54,3 @@ class FlaskContainer:
 
     def close(self):
         self._pool.close()
-
-# register_auth_routes(app, container.auth_service)
-# register_key_routes(app, container.key_service)

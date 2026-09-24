@@ -55,7 +55,7 @@ def get_session_id_by_user_id_from_db(user_id, db_connection):
         return cursor.fetchone()
 
 
-def test_add_user(db_pool, db_connection, clean_db):
+def test_add_user(db_pool, db_connection):
     add_new_user(db_pool)
 
     row = get_user_by_username_from_db("username", db_connection)
@@ -66,7 +66,7 @@ def test_add_user(db_pool, db_connection, clean_db):
     assert row[2] == "password-super-hash"
 
 
-def test_add_session(db_pool, db_connection, clean_db):
+def test_add_session(db_pool, db_connection):
     add_new_user(db_pool)
 
     user = get_user_by_username_from_db("username", db_connection)
@@ -87,7 +87,7 @@ def test_add_session(db_pool, db_connection, clean_db):
     assert isinstance(session[0], UUID)
 
 
-def test_rollback_discards_new_user(db_pool, db_connection, clean_db):
+def test_rollback_discards_new_user(db_pool, db_connection):
     with pytest.raises(RuntimeError):
         with PostgresUnitOfWork(db_pool) as uow:
             user = User.create(
@@ -104,7 +104,7 @@ def test_rollback_discards_new_user(db_pool, db_connection, clean_db):
     assert row is None
 
 
-def test_rollback_discards_new_session(db_pool, db_connection, clean_db):
+def test_rollback_discards_new_session(db_pool, db_connection):
     add_new_user(db_pool)
 
     user = get_user_by_username_from_db("username", db_connection)
@@ -124,7 +124,7 @@ def test_rollback_discards_new_session(db_pool, db_connection, clean_db):
     assert row is None
 
 
-def test_commit_updates_existing_user(db_pool, db_connection, clean_db):
+def test_commit_updates_existing_user(db_pool, db_connection):
     add_new_user(db_pool)
     row = get_user_by_username_from_db("username", db_connection)
     with PostgresUnitOfWork(db_pool) as uow:
@@ -137,7 +137,7 @@ def test_commit_updates_existing_user(db_pool, db_connection, clean_db):
     assert row[3] is False
 
 
-def test_commit_updates_existing_session(db_pool, db_connection, clean_db):
+def test_commit_updates_existing_session(db_pool, db_connection):
     add_new_user(db_pool)
     user = get_user_by_username_from_db("username", db_connection)
     with PostgresUnitOfWork(db_pool) as uow:
@@ -160,7 +160,7 @@ def test_commit_updates_existing_session(db_pool, db_connection, clean_db):
     assert row[1] is True
 
 
-def test_rollback_discards_user_update(db_pool, db_connection, clean_db):
+def test_rollback_discards_user_update(db_pool, db_connection):
     add_new_user(db_pool)
 
     with pytest.raises(RuntimeError):
@@ -177,7 +177,7 @@ def test_rollback_discards_user_update(db_pool, db_connection, clean_db):
     assert row[3] is False
 
 
-def test_rollback_discards_session_update(db_pool, db_connection, clean_db):
+def test_rollback_discards_session_update(db_pool, db_connection):
     add_new_user(db_pool)
     user = get_user_by_username_from_db("username", db_connection)
 
@@ -204,7 +204,7 @@ def test_rollback_discards_session_update(db_pool, db_connection, clean_db):
     assert row[1] is False
 
 
-def test_commit_rolls_back_all_repositories_on_flush_error(db_pool, db_connection, clean_db):
+def test_commit_rolls_back_all_repositories_on_flush_error(db_pool, db_connection):
     with pytest.raises(InfrastructureError):
         with PostgresUnitOfWork(db_pool) as uow:
             user = User.create(
@@ -226,21 +226,21 @@ def test_commit_rolls_back_all_repositories_on_flush_error(db_pool, db_connectio
     assert get_user_by_username_from_db("username", db_connection) is None
 
 
-def test_returns_none_for_nonexistent_user(db_pool, clean_db):
+def test_returns_none_for_nonexistent_user(db_pool):
     with PostgresUnitOfWork(db_pool) as uow:
         user = uow.users.get(uuid7())
 
     assert user is None
 
 
-def test_returns_none_for_nonexistent_session(db_pool, clean_db):
+def test_returns_none_for_nonexistent_session(db_pool):
     with PostgresUnitOfWork(db_pool) as uow:
         session = uow.sessions.get(uuid7())
 
     assert session is None
 
 
-def test_optimistic_locking_user(db_pool, db_connection, clean_db):
+def test_optimistic_locking_user(db_pool, db_connection):
     add_new_user(db_pool)
     row = get_user_by_username_from_db("username", db_connection)
 
@@ -260,7 +260,7 @@ def test_optimistic_locking_user(db_pool, db_connection, clean_db):
                 uow2.commit()
 
 
-def test_optimistic_locking_session(db_pool, db_connection, clean_db):
+def test_optimistic_locking_session(db_pool, db_connection):
     add_new_user(db_pool)
 
     user = get_user_by_username_from_db("username", db_connection)
@@ -294,7 +294,7 @@ def test_optimistic_locking_session(db_pool, db_connection, clean_db):
                 uow2.commit()
 
 
-def test_optimistic_locking_threads_user(db_pool, db_connection, clean_db):
+def test_optimistic_locking_threads_user(db_pool, db_connection):
     add_new_user(db_pool)
     row = get_user_by_username_from_db("username", db_connection)
 
@@ -328,7 +328,7 @@ def test_optimistic_locking_threads_user(db_pool, db_connection, clean_db):
     assert result.count("error") == 1
 
 
-def test_optimistic_locking_threads_session(db_pool, db_connection, clean_db):
+def test_optimistic_locking_threads_session(db_pool, db_connection):
     add_new_user(db_pool)
     user_row = get_user_by_username_from_db("username", db_connection)
     with PostgresUnitOfWork(db_pool) as unit_of_work:

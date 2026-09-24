@@ -56,6 +56,14 @@ services:
       - ./src:/app/src
       - ./tests:/app/tests
 
+    command:
+      - gunicorn
+      - --workers
+      - "4"
+      - --bind
+      - 0.0.0.0:80
+      - auth.api.flask.wsgi:app
+
 volumes:
   postgres_data:
 
