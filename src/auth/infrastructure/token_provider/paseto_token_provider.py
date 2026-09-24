@@ -1,6 +1,6 @@
 import json
 from datetime import UTC, datetime, timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pyseto
 from pyseto import Key, KeyInterface
@@ -53,6 +53,7 @@ class PasetoTokenProvider:
             "sub": str(user_id),
             "sid": str(session_id),
             "type": "refresh",
+            "jti": str(uuid4())  # to ensure uniqueness & jitter
         }
 
         private_key = self._get_private_key()
